@@ -1,6 +1,6 @@
 # slack-bulkinviter
 
-Super quick and dirty Python script to bulk invite ALL users in a slack team to a specific channel. We need to do this regulary with [Counterparty](http://www.counterparty.io) when we create a new channel that everyone should be in, or move things around.
+Super quick and dirty Python script to bulk invite ALL users in a slack team to a specific channel. We need to do this regulary with [Counterparty](http://www.counterparty.io) when we create a new channel that everyone should be in, or move things around. Now using the new Conversations API.
 
 To use:
 * Install the [slacker](https://github.com/os/slacker) library via `pip`
