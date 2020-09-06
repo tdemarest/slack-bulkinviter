@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
 import sys
-import logging
 import os
+import logging
 import time
 import argparse
 from slack import WebClient
@@ -12,13 +12,17 @@ from slack import WebClient
 parser = argparse.ArgumentParser()
 
 # add long and short argument
-parser.add_argument("-c", "--channel", required=True, metavar="<Channel Name>", help="Channel name to add members. REQUIRED.")
-parser.add_argument("-k", "--token", metavar="OAuth Access Token Text String'", help="Slack App OAuth access token string")
+parser.add_argument("-c", "--channel", required=True, metavar="CHANNEL NAME", help="Channel name to add members. REQUIRED.")
 parser.add_argument("-b", "--bots", action='store_true', help="Include bots in channel. default: not included.")
 parser.add_argument("-a", "--apps", action='store_true', help="Include apps in channel. default: not included.")
-parser.add_argument("--sleep", type=int, default=2, help="Adjust sleep time between pagination calls. default: 2 seconds")
-parser.add_argument("-s", "--split", type=int, default=10, help="Split invite list into less than 1000 users. If your invite list is greater than 10000 users adjust this to split into less than 1000 chunks (as a divisor). default: 10")
+parser.add_argument("--sleep", type=int, metavar="SECONDS", default=2, help="Adjust sleep time between pagination calls. default: 2 seconds")
+parser.add_argument("-s", "--split", metavar="INT", type=int, default=10, help="Split invite list into less than 1000 users. If your invite list is greater than 10000 users adjust this to split into less than 1000 chunks (as a divisor). default: 10")
 parser.add_argument("-v", "--verbose", action='store_true', help="Verbose output. Useful inworkspaces with large number of users or conversations.")
+
+# Only allow one toargument. Not required as default SLACK_API_TOKEN variable can be set and neither is then required
+group = parser.add_mutually_exclusive_group(required=False)
+group.add_argument("-k", "--token", metavar="TOKEN STRING", help="Slack App OAuth access token string. Required if environment variable SLACK_API_TOKEN or --tokenvar is not set.")
+group.add_argument("--tokenenv", metavar="TOKEN ENV VAR", default="SLACK_API_TOKEN", help="Environment variable name that contains the Slack OAuth API Token. default: SLACK_API_TOKEN")
 
 # read arguments from the command line
 args = parser.parse_args()
@@ -27,18 +31,6 @@ if args.verbose:
     # Setup logging using f-string formatting
     # lmgging.basicConfig(stream=sys.stderr, level=logging.INFO, format="{processName:<12} {message} ({filename}:{lineno})", style="{")
     logging.basicConfig(stream=sys.stderr, level=logging.INFO, format="{message} ({filename}:{lineno})", style="{")
-
-if args.token:
-    client = WebClient(args.token)
-else:
-    # Load API key from environment variable
-    try:
-        token = os.environ["SLACK_API_TOKEN"]
-        assert token
-    except AssertionError:
-        print('No OAuth Token passed via --token or env SLACK_API_TOKEN')
-    else:
-        client = WebClient(token)
 
 
 def find_channel(response):
@@ -91,15 +83,30 @@ def split_list(alist, wanted_parts=args.split):
             for i in range(wanted_parts)]
 
 
+# Get token from commandline or environment variable
+if args.token:
+    token = args.token
+else:
+    token = os.environ.get(args.tokenenv)
+
 if args.verbose:
     logging.info(f'\U0001F30E  Verbose logging enabled {args.verbose}. Settings:')
-    logging.info(f'  API Token: {token}')
-    logging.info(f'  Channel: {args.channel}')
-    logging.info(f'  Sleep seconds: {args.sleep}')
-    logging.info(f'  Split: {args.split}')
-    logging.info(f'  Invite bots?: {args.bots}')
-    logging.info(f'  Invite apps?: {args.apps}')
+    logging.info(f'  Token ENV Variable --tokenenv: {args.tokenenv}')
+    logging.info(f'  Token String       --token:    {args.token}')
+    logging.info(f'  Channel            --channel:  {args.channel}')
+    logging.info(f'  Sleep secondsi     --sleep:    {args.sleep}')
+    logging.info(f'  Spliti             --split:    {args.split}')
+    logging.info(f'  Invite bots?       --bots:     {args.bots}')
+    logging.info(f'  Invite apps?i      --apps:     {args.apps}')
+    logging.info(f'  Token:                         {token}')
 
+try:
+    assert token
+except AssertionError:
+    print('\U0001F6D1  No OAuth Token passed via --token, envronment variable SLACK_API_TOKEN or --tokenenv')
+    sys.exit(1)
+else:
+    client = WebClient(token)
 
 count = 0
 

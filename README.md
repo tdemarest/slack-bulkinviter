@@ -56,9 +56,10 @@ Option | Descriptions
 `--help` | Help on using the script.
 `--channel` | The channel to add the user to. Required.
 `--token` | The Slack OAuth Token (string) for the user app required for the workspace. Required if the `$SLACK_API_TOKEN` environment variable is not set.
+`--tokenenv` | The environment variable name that contains the Slack OAuth API Token. default: SLACK_API_TOKEN
 `--bots` | Include bot users in the channel. Excluded by default.
 `--apps` | Include apps in the channel. Excluded by default.
-`--sleep` | Number of seconds to sleep between pagination calls. Default is as low as is reasaonable. default: 2 seconds.
+`--sleep` | Number of seconds to sleep between pagination calls. Default is as low as is reasaonable. default: 2 seconds
 `--split` | List split divisor used to chunk large lists into smaller chunks. This is required if the invite list exceeds 1000 users. If the invite list is greater than 10,0000 use `--split` to increase the divisor until `Users = Total Invited Users / Split` is less than 1000. Defaults to **10** which is good for up to 10,000 invites.
 `--verbose` | Output more info about what is happening. Useful for workspaces with large number of conversations or users.
 
